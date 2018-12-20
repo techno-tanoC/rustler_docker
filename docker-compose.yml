@@ -1,0 +1,8 @@
+version: '3'
+services:
+  app:
+    build: .
+    environment:
+      NO_COMPILE_RUSTLER: "true"
+    tty: true
+    stdin_open: true
