@@ -1,3 +1,5 @@
+/priv/native
+/native/client/target
 
 # Created by https://www.gitignore.io/api/elixir
 # Edit at https://www.gitignore.io/?templates=elixir
