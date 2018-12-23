@@ -1,11 +1,11 @@
-FROM elixir:1.7.4-slim
+FROM elixir:1.7.4-alpine
 
-RUN apt update && apt upgrade -y
-RUN apt install -y --no-install-recommends curl build-essential libssl-dev pkg-config ca-certificates
-RUN apt clean
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --no-modify-path
+RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/main/ >> /etc/apk/repositories
+RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories
 
-ENV PATH=/root/.cargo/bin/:$PATH
+RUN apk update && \
+    apk upgrade && \
+    apk --no-cache add pkgconfig openssl-dev rust cargo
 
 WORKDIR /work
 
@@ -13,10 +13,14 @@ COPY native/client .
 RUN cargo rustc --release
 
 
-FROM elixir:1.7.4-slim
+FROM elixir:1.7.4-alpine
 
-RUN apt update && apt upgrade -y
-RUN apt install -y ca-certificates libssl-dev
+RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/main/ >> /etc/apk/repositories
+RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories
+
+RUN apk update && \
+    apk upgrade && \
+    apk --no-cache add pkgconfig openssl-dev libgcc ca-certificates
 
 WORKDIR /app
 
@@ -30,7 +34,7 @@ RUN mix local.rebar --force
 RUN mix deps.get
 RUN mix deps.compile
 
+COPY --from=0 /work/target/release/libclient.so priv/native/libclient.so
+
 COPY . .
 RUN mix compile
-
-COPY --from=0 /work/target/release/libclient.so priv/native/libclient.so
